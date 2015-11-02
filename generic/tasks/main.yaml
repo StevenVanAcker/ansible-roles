@@ -20,7 +20,7 @@
     with_items:
         - unattended-upgrades
         - git
-	- vim
+        - vim
 
   - name: install vimrc
     copy: src=vimrc dest=/etc/vim/vimrc

@@ -1,0 +1,11 @@
+- name: check if Docker image needs to be built
+  command: docker inspect --format="{{'{{'}} .Id {{'}}'}}" {{item.name}}
+  with_items: images
+  register: imagesexist
+  failed_when: false
+  changed_when: false
+
+- name: build Docker image
+  shell: docker build -t {{item.item.name}} {{item.item.path}}
+  with_items: imagesexist.results
+  when: item.rc != 0

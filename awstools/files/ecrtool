@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+
+import boto3
+import subprocess
+import time
+import argparse
+
+class ECRTool(object):
+    def __init__(self): #{{{
+        self.client = boto3.client("ecr")
+        self.loggedin = False
+    #}}}
+    def _exec(self, cmdarr): #{{{
+        output = ""
+        rc = -1
+
+        try:
+            #output = subprocess.check_output(cmdarr, stderr=subprocess.STDOUT, shell=True).decode("utf-8").strip()
+            output = subprocess.check_output(cmdarr, stderr=subprocess.STDOUT).decode("utf-8").strip()
+            rc = 0
+        except subprocess.CalledProcessError as e:
+            output = e.output
+            rc = e.returncode
+            print("START LALALALA {}".format(cmdarr))
+            print(output)
+            print("END LALALALA {}".format(rc))
+
+        return (output, rc)
+    #}}}
+    def _getRepoURI(self, reponame): #{{{
+        repos = self.list()
+        if not reponame in repos:
+            return None
+        return "{}.dkr.ecr.us-east-1.amazonaws.com/{}".format(repos[reponame], reponame)
+    #}}}
+    def _repoExists(self, name, invert=False): #{{{
+        start = time.time()
+        while time.time() < start + 5:
+            repos = self.list()
+            if (not invert) == (name in repos):
+                return True
+
+        print("_repoExists Timeout!!")
+        return False
+    #}}}
+
+    def list(self): #{{{
+        """Return a list repositories as a dict with the repositorynames as keys, and account-id as value"""
+        repositories = dict([ (x["repositoryName"], x["registryId"]) for x in  self.client.describe_repositories()["repositories"]])
+
+        return repositories
+    #}}}
+    def create(self, name): #{{{
+        """Create a new repository with the given name"""
+        try:
+            self.client.create_repository(repositoryName=name)
+        except:
+            pass
+
+        return self._repoExists(name)
+    #}}}
+    def delete(self, name, force=False): #{{{
+        """Remove a given repository"""
+        self.client.delete_repository(repositoryName=name, force=force)
+        return self._repoExists(name, True)
+    #}}}
+    def login(self): #{{{
+        """Instruct docker to login to the ECR service"""
+        if self.loggedin:
+            return True
+
+        logincmd = subprocess.check_output(["aws", "ecr", "get-login"]).decode("utf-8").strip()
+        output = subprocess.check_output(logincmd, stderr=subprocess.STDOUT, shell=True).decode("utf-8").strip() #brrr
+        if "Login Succeeded" in output:
+            self.loggedin = True
+            return True
+
+        print("Login failed")
+        print(output)
+        return False
+    #}}}
+    def push(self, localname, remotename=None): #{{{
+        """
+        Push a docker image named <localname> to a repository named <remotename>.
+        If <remotename> is not specified, it is set to <localname>.
+        The remote repository will be created if it doesn't exist.
+        """
+
+        if remotename == None:
+            remotename = localname
+
+        if not self.create(remotename):
+            print("Couldnot create repo called {}".format(remotename))
+            return False
+
+        repouri = self._getRepoURI(remotename)
+
+        if repouri == None:
+            print("Couldnot get repo URI for {}".format(remotename))
+            return False
+
+        if not self.login():
+            print("Login failed")
+            return False
+
+        output, rc = self._exec(["docker", "tag", localname, repouri])
+        if rc != 0:
+            print("Tag failed with rc {}".format(rc))
+            print(output)
+            return False
+
+        output, rc = self._exec(["docker", "push", repouri])
+        if rc != 0:
+            print("Push failed with rc {}".format(rc))
+            print(output)
+            return False
+
+        return True
+    #}}}
+    def pull(self, remotename, localname=None): #{{{
+        """
+        Pull a docker image from a repository named <remotename>.
+        If <localname> is not specified, it is set to <remotename>.
+        """
+
+        if localname == None:
+            localname = remotename
+
+        repouri = self._getRepoURI(remotename)
+
+        if repouri == None:
+            print("Couldnot get repo URI for {}".format(remotename))
+            return False
+
+        if not self.login():
+            print("Login failed")
+            return False
+
+        output, rc = self._exec(["docker", "pull", repouri])
+        if rc != 0:
+            print("Pull failed with rc {}".format(rc))
+            print(output)
+            return False
+
+        output, rc = self._exec(["docker", "tag", repouri, remotename])
+        if rc != 0:
+            print("Tag failed with rc {}".format(rc))
+            print(output)
+            return False
+
+        return True
+    #}}}
+
+    def make_parser(self): #{{{
+        parser = argparse.ArgumentParser(prog='ecrtool')
+        subparsers = parser.add_subparsers(dest="subcmd", help='possible subcommands')
+
+        parser_list = subparsers.add_parser('list', help='list repositories')
+        parser_create = subparsers.add_parser('create', help='create a repository')
+        parser_delete = subparsers.add_parser('delete', help='delete a repository')
+        parser_login = subparsers.add_parser('login', help='log docker into ECR')
+        parser_push = subparsers.add_parser('push', help='push a docker image to a repository')
+        parser_pull = subparsers.add_parser('pull', help='pull a docker image from a repository')
+
+        parser_create.add_argument('name', type=str, help='repository name')
+
+        parser_delete.add_argument('name', type=str, help='repository name')
+        parser_delete.add_argument('-f', '--force', action='store_true', help='remove existing images too')
+
+        parser_push.add_argument('source', type=str, help='image name to push')
+        parser_push.add_argument('dest', type=str, default=None, nargs='?', help='repository name to push to (or same as source if unspecified)')
+
+        parser_pull.add_argument('source', type=str, help='repository name to pull from')
+        parser_pull.add_argument('dest', type=str, default=None, nargs='?', help='repository name to pull to (or same as source if unspecified)')
+
+        return parser
+    #}}}
+    def handle_args(self, args): #{{{
+        parser = self.make_parser()
+        opts = parser.parse_args(args)
+        if opts.subcmd == "list":
+            print("Repositories:")
+            for (k, v) in self.list().items():
+                print("    {}".format(k))
+            return
+
+        if opts.subcmd == "login":
+            res = self.login()
+            if res:
+                print("Login succeeded")
+            else:
+                print("Login failed")
+            return
+
+        if opts.subcmd == "create":
+            res = self.create(opts.name)
+            if res:
+                print("Create succeeded")
+            else:
+                print("Create failed")
+            return
+
+        if opts.subcmd == "delete":
+            res = self.delete(opts.name, opts.force)
+            if res:
+                print("Delete succeeded")
+            else:
+                print("Delete failed")
+            return
+
+        if opts.subcmd == "push":
+            res = self.push(opts.source, opts.dest)
+            if res:
+                print("Push succeeded")
+            else:
+                print("Push failed")
+            return
+
+        if opts.subcmd == "pull":
+            res = self.pull(opts.source, opts.dest)
+            if res:
+                print("Pull succeeded")
+            else:
+                print("Pull failed")
+            return
+
+        parser.print_help()
+
+
+    #}}}
+
+if __name__ == "__main__":
+  import pprint, sys
+
+  x = ECRTool()
+  x.handle_args(sys.argv[1:])

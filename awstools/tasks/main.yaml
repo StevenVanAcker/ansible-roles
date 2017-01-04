@@ -1,0 +1,23 @@
+- name: install packages
+  apt: "name={{ item }} state=present"
+  with_items:
+      - awscli
+      - ipython3
+      - ipython
+      - python3-boto3
+      - python-boto3
+
+- name: create aws config dir
+  file: path="~{{ansible_user}}/.aws" state=directory mode=0755 owner="{{ansible_user}}" group="{{ansible_user}}"
+
+- name: copy aws config
+  copy: src=files/awsconfig dest="~{{ansible_user}}/.aws/config" owner="{{ansible_user}}" group="{{ansible_user}}" mode=644
+
+- name: create aws config dir
+  file: path="/root/.aws" state=directory mode=0755 owner="root" group="root"
+
+- name: copy aws config
+  copy: src=files/awsconfig dest="/root/.aws/config" owner="root" group="root" mode=644
+
+- name: copy ecrtool script
+  copy: src=files/ecrtool dest="/usr/bin/ecrtool" owner="root" group="root" mode=755

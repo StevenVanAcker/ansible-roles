@@ -21,3 +21,18 @@
 
 - name: copy ecrtool script
   copy: src=files/ecrtool dest="/usr/bin/ecrtool" owner="root" group="root" mode=755
+
+- name: check if host was provisioned with credentials by amazon EC2
+  shell: aws sts get-caller-identity
+  register: awssts
+  failed_when: False
+  changed_when: False
+
+- name: copy credentials file for regular user if amazon did not provide credentials, but credentials file is specified
+  copy: content="{{ lookup('file', credentialsfile) }}" dest="~{{ansible_user}}/.aws/credentials" owner="{{ansible_user}}" group="{{ansible_user}}" mode=600
+  when: awssts.rc != 0 and credentialsfile is defined
+
+- name: copy credentials file for root if amazon did not provide credentials, but credentials file is specified
+  copy: content="{{ lookup('file', credentialsfile) }}" dest="/root/.aws/credentials" owner="root" group="root" mode=600
+  when: awssts.rc != 0 and credentialsfile is defined
+

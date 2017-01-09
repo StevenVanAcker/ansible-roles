@@ -115,6 +115,12 @@ class ECRTool(object):
             print(output)
             return False
 
+        output, rc = self._exec(["docker", "rmi", repouri])
+        if rc != 0:
+            print("Untag failed with rc {}".format(rc))
+            print(output)
+            return False
+
         return True
     #}}}
     def pull(self, remotename, localname=None): #{{{
@@ -145,6 +151,12 @@ class ECRTool(object):
         output, rc = self._exec(["docker", "tag", repouri, remotename])
         if rc != 0:
             print("Tag failed with rc {}".format(rc))
+            print(output)
+            return False
+
+        output, rc = self._exec(["docker", "rmi", repouri])
+        if rc != 0:
+            print("Untag failed with rc {}".format(rc))
             print(output)
             return False
 

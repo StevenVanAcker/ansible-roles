@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+
+import boto3
+import subprocess
+import time
+import argparse
+
+# a task description is part of a family, e.g. "worker:3" has family "worker" and revision "3"
+
+class ECSTool(object):
+    def __init__(self): #{{{
+        self.client = boto3.client("ecs")
+        self.loggedin = False
+    #}}}
+    def _exec(self, cmdarr): #{{{
+        output = ""
+        rc = -1
+
+        try:
+            #output = subprocess.check_output(cmdarr, stderr=subprocess.STDOUT, shell=True).decode("utf-8").strip()
+            output = subprocess.check_output(cmdarr, stderr=subprocess.STDOUT).decode("utf-8").strip()
+            rc = 0
+        except subprocess.CalledProcessError as e:
+            output = e.output
+            rc = e.returncode
+            print("START LALALALA {}".format(cmdarr))
+            print(output)
+            print("END LALALALA {}".format(rc))
+
+        return (output, rc)
+    #}}}
+    def _getRepoURI(self, reponame): #{{{
+        repos = self.list()
+        if not reponame in repos:
+            return None
+        return "{}.dkr.ecr.us-east-1.amazonaws.com/{}".format(repos[reponame], reponame)
+    #}}}
+    def _repoExists(self, name, invert=False): #{{{
+        start = time.time()
+        while time.time() < start + 5:
+            repos = self.list()
+            if (not invert) == (name in repos):
+                return True
+
+        print("_repoExists Timeout!!")
+        return False
+    #}}}
+
+    def list(self): #{{{
+        """Return a dict with task definitions"""
+        tasks = self.client.list_task_definitions()["taskDefinitionArns"]
+        out = {}
+        for arn in tasks:
+            parts = arn.split("/")
+            taskname = parts[1]
+            out[taskname] = arn
+        return out
+    #}}}
+    def create(self, family, image, role, mem): #{{{
+        """Create a new repository with the given name"""
+        try:
+            containerdef = {
+                'name': family,
+                'image': image, # FIXME: this should be full path
+                'memoryReservation': mem,
+            }
+
+            response = self.client.register_task_definition(
+                    family=family, 
+                    taskRoleArn=role, 
+                    containerDefinitions=[containerdef]
+                    )
+            return True
+        except:
+            pass
+        return False
+    #}}}
+    def delete(self, name, delall=False): #{{{
+        """Remove a given repository"""
+        # if no revision specified, complain unless force is specified (--all?)
+        try:
+            if ":" in name:
+                self.client.deregister_task_definition(taskDefinition=name)
+                return True
+            else:
+                if delall:
+                    tasks = [x for x in self.list().keys() if x.startswith(name+":")]
+                    return all([self.delete(t) for t in tasks])
+                else:
+                    print("Must specify either revision or remove all")
+                    return False
+        except:
+            pass
+        return False
+    #}}}
+
+    def make_parser(self): #{{{
+        parser = argparse.ArgumentParser(prog='ecstool')
+        subparsers = parser.add_subparsers(dest="subcmd", help='possible subcommands')
+
+        parser_list = subparsers.add_parser('list', help='list task definitions')
+        parser_create = subparsers.add_parser('create', help='create a repository')
+        parser_delete = subparsers.add_parser('delete', help='delete a repository')
+
+        parser_create.add_argument('name', type=str, help='name of the new task (family)')
+        parser_create.add_argument('image', type=str, help='docker image name (repository)')
+        parser_create.add_argument('role', type=str, help='IAM role')
+        parser_create.add_argument('mem', type=int, default=512, nargs='?', help='memory to allocate for this task (in MB)')
+
+        parser_delete.add_argument('name', type=str, help='task to delete, must include revision unless intending to remove all revisions')
+        parser_delete.add_argument('-a', '--all', action='store_true', help='remove all revisions')
+
+        return parser
+    #}}}
+    def handle_args(self, args): #{{{
+        parser = self.make_parser()
+        opts = parser.parse_args(args)
+        if opts.subcmd == "list":
+            print("Task families:")
+            for (k,v) in sorted(self.list().items()):
+                print("    {}".format(k))
+            return
+
+        if opts.subcmd == "create":
+            res = self.create(opts.name, opts.image, opts.role, opts.mem)
+            if res:
+                print("Create succeeded")
+            else:
+                print("Create failed")
+            return
+
+        if opts.subcmd == "delete":
+            res = self.delete(opts.name, opts.all)
+            if res:
+                print("Delete succeeded")
+            else:
+                print("Delete failed")
+            return
+
+        parser.print_help()
+
+
+    #}}}
+
+if __name__ == "__main__":
+  import pprint, sys
+
+  x = ECSTool()
+  x.handle_args(sys.argv[1:])
+
+

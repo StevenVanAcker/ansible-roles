@@ -1,0 +1,2 @@
+- name: copy ctf-bash script
+  copy: src=ctf-bash dest="/usr/local/bin/ctf-bash" mode=0755

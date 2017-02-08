@@ -1,0 +1,10 @@
+---
+dependencies:
+    - { role: dockerhost }
+    - role: dockerimagebuilder
+      images:
+        - name: ctftools-orig
+          repo: https://github.com/StevenVanAcker/ctf-tools.git #https://github.com/zardus/ctf-tools.git
+        - name: ctftools
+          path: /vagrant/Dockerfiles/ctftools-all-installed
+

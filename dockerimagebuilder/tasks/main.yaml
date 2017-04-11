@@ -1,11 +1,30 @@
 - name: check if Docker image needs to be built
   command: docker inspect --format="{{'{{'}} .Id {{'}}'}}" {{item.name}}
-  with_items: images
+  with_items: "{{images}}"
   register: imagesexist
   failed_when: false
   changed_when: false
 
-- name: build Docker image
-  shell: docker build -t {{item.item.name}} {{item.item.path}}
-  with_items: imagesexist.results
-  when: item.rc != 0
+- name: create directory for the repo
+  file:
+    dest: "/opt/dockerimages/{{item.item.name}}"
+    state: directory
+  with_items: "{{imagesexist.results}}"
+  when: item.rc != 0 and item.item.repo is defined
+
+- name: download the repo
+  git:
+    repo: "{{item.item.repo}}"
+    dest: "/opt/dockerimages/{{item.item.name}}"
+  with_items: "{{imagesexist.results}}"
+  when: item.rc != 0 and item.item.repo is defined
+
+- name: build Docker image from repo
+  shell: "docker build -t {{item.item.name}} /opt/dockerimages/{{item.item.name}}"
+  with_items: "{{imagesexist.results}}"
+  when: item.rc != 0 and item.item.repo is defined
+
+- name: build Docker image from file
+  shell: "docker build -t {{item.item.name}} {{item.item.path}}"
+  with_items: "{{imagesexist.results}}"
+  when: item.rc != 0 and item.item.path is defined

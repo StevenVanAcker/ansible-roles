@@ -1,0 +1,52 @@
+- name: ensure pip is installed
+  apt: "name={{ item }} state=present"
+  with_items:
+  - python3-pip
+  - supervisor
+
+- name: update docker-tcp-switchboard from github
+  git: repo=https://github.com/OverTheWireOrg/docker-tcp-switchboard.git dest=/opt/docker-tcp-switchboard
+  register: dts
+
+- name: install any requirements
+  pip: requirements=/opt/docker-tcp-switchboard/requirements.txt executable=pip3
+  when: dts.changed
+
+- name: symlink docker-tcp-switchboard
+  file: src=/opt/docker-tcp-switchboard/docker-tcp-switchboard.py dest=/usr/local/bin/docker-tcp-switchboard.py state=link
+
+- name: create a configfile if there is none already
+  copy: src=docker-tcp-switchboard.conf dest=/etc/docker-tcp-switchboard.conf force=no
+
+- name: create split configuration dir if needed
+  file: path=/etc/docker-tcp-switchboard.d state=directory
+
+- name: create split configuration files
+  template:
+    src: 'splitconfig.j2'
+    dest: '/etc/docker-tcp-switchboard.d/{{item.name}}.conf'
+  with_items: '{{ images }}'
+
+- name: setup supervisor config
+  template:
+    src: 'supervisor.conf.j2'
+    dest: '/etc/supervisor/conf.d/docker-tcp-switchboard.conf'
+  register: supervisor
+
+- name: reread supervisor config
+  supervisorctl: name='docker-tcp-switchboard' state=present
+  when: supervisor.changed
+
+- name: supervisor docker-tcp-switchboard process started
+  supervisorctl: name='docker-tcp-switchboard' state=started
+  when: supervisor.changed
+
+#- name: list files in split config dir
+#  shell: for i in $(ls -1 /etc/docker-tcp-switchboard.d/); do basename $i .conf; done
+#  register: contents
+#
+#- name: remove unmanaged split config files
+#  file: path=/etc/docker-tcp-switchboard.d/{{ item }} state=absent
+#  with_items: '{{ contents.stdout_lines }}'
+#  when: item not in images
+#

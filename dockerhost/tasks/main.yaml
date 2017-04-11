@@ -12,3 +12,14 @@
 - name: add default user to docker group
   user: name="{{ansible_user}}" groups=docker append=yes
 
+- name: install packages
+  apt: "name={{ item }} state=present"
+  with_items:
+      - python3-pip
+      - python-pip
+
+- name: install pip packages
+  pip: "name=docker state=present executable={{item}}"
+  with_items:
+      - pip
+      - pip3

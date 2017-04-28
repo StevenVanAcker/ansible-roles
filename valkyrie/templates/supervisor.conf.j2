@@ -1,0 +1,7 @@
+[program:valkyrie-slave]
+command=/opt/valkyrie/valkyrie-update-and-start.sh
+user={{ansible_user}}
+autostart=true
+autorestart=true
+stopasgroup=true
+

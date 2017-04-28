@@ -1,0 +1,32 @@
+- name: install some dpkg packages
+  apt: "name={{ item }} state=present"
+  with_items:
+    - supervisor
+    - python3-pip
+
+- name: install pip3 packages
+  pip: "name={{ item }} state=present executable=pip3"
+  with_items:
+      - docker
+
+- name: create /opt/valkyrie
+  file: path=/opt/valkyrie state=directory owner={{ansible_user}}
+
+- name: clone Valkyrie from github
+  git: repo=https://github.com/StevenVanAcker/Valkyrie.git dest=/opt/valkyrie
+  become: no
+
+- name: setup supervisor config
+  template:
+    src: 'supervisor.conf.j2'
+    dest: '/etc/supervisor/conf.d/valkyrie-slave.conf'
+  register: supervisor
+
+- name: reread supervisor config
+  supervisorctl: name='valkyrie-slave' state=present
+  when: supervisor.changed
+
+- name: supervisor valkyrie-slave process started
+  supervisorctl: name='valkyrie-slave' state=started
+  when: supervisor.changed
+

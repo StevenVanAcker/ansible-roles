@@ -2,34 +2,30 @@
     apt: "name={{ item }} state=present"
     with_items:
       - shorewall
-    tags:
-        - firewall
-
+  
   - name: make sure shorewall is enabled
     service: name=shorewall enabled=yes
-    tags:
-        - firewall
 
-  - name: configure shorewall
+  - name: configure default shorewall rules
     lineinfile: "dest={{ item.filename }} line=\"{{ item.line }}\" state=present create=yes"
     with_items:
-        - { filename: "/etc/shorewall/interfaces", line: "ext eth0" }
-        - { filename: "/etc/shorewall/zones", line: "fw firewall" }
-        - { filename: "/etc/shorewall/zones", line: "ext ipv4" }
-        - { filename: "/etc/shorewall/policy", line: "all all DROP" }
-        - { filename: "/etc/shorewall/rules", line: "ACCEPT:info ext fw tcp 22" }
-        - { filename: "/etc/shorewall/rules", line: "ACCEPT:info fw  ext all" }
-    register: shorewallconfig
-    tags:
-        - firewall
+        - { filename: "/etc/shorewall/interfaces", line: "ext {{ ansible_default_ipv4.interface }}" }
+        - { filename: "/etc/shorewall/zones",   line: "fw firewall" }
+        - { filename: "/etc/shorewall/zones",   line: "ext ipv4" }
+        - { filename: "/etc/shorewall/policy",  line: "all all DROP info" }
+        - { filename: "/etc/shorewall/rules",   line: "ACCEPT:info ext fw tcp 22" }
+        - { filename: "/etc/shorewall/rules",   line: "ACCEPT:info fw ext all" }
+    notify: 
+        - restart shorewall
 
-  - name: force reload shorewall
-    shell: "shorewall check && shorewall restart"
-    when: shorewallconfig.changed
-    tags:
-        - firewall
+  - name: configure custom shorewall rules
+    lineinfile: "dest={{ item.filename }} line=\"{{ item.line }}\" state=present create=yes"
+    with_items: "{{rules}}"
+    notify: 
+        - restart shorewall
 
-  - name: start shorewall at boot
-    copy: src=shorewall dest=/etc/default/shorewall
-    tags:
-        - firewall
+  - name: enable shorewall to start from boot
+    lineinfile: "dest=/etc/default/shorewall regexp='^startup=' line='startup=1' state=present"
+
+  - name: make shorewall aware of Docker
+    lineinfile: "dest=/etc/shorewall/shorewall.conf regexp='^DOCKER=' line='DOCKER=Yes' state=present"

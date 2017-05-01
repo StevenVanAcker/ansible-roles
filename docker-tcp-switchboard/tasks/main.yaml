@@ -16,7 +16,7 @@
   file: src=/opt/docker-tcp-switchboard/docker-tcp-switchboard.py dest=/usr/local/bin/docker-tcp-switchboard.py state=link
 
 - name: create a configfile if there is none already
-  copy: src=docker-tcp-switchboard.conf dest=/etc/docker-tcp-switchboard.conf force=no
+  template: src=docker-tcp-switchboard.conf.j2 dest=/etc/docker-tcp-switchboard.conf force=no
 
 - name: create split configuration dir if needed
   file: path=/etc/docker-tcp-switchboard.d state=directory

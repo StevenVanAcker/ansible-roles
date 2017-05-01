@@ -23,3 +23,14 @@
   with_items:
       - pip
       - pip3
+
+- name: check bridges
+  shell: "docker network inspect {{ item.name }}"
+  ignore_errors: yes
+  with_items: "{{ bridges }}"
+  register: dockerbridgesres
+
+- name: create bridges
+  shell: "docker network create --subnet={{ item.item.subnet }} -o com.docker.network.bridge.name={{item.item.name}} {{item.item.name}}"
+  when: item.rc == 1
+  with_items: "{{ dockerbridgesres.results }}"

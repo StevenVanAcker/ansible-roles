@@ -27,7 +27,7 @@
 - name: check bridges
   shell: "docker network inspect {{ item.name }}"
   ignore_errors: yes
-  with_items: "{{ bridges }}"
+  with_items: "{{ bridges | default([]) }}"
   register: dockerbridgesres
 
 - name: create bridges

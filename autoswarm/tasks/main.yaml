@@ -1,0 +1,32 @@
+- name: install some dpkg packages
+  apt: "name={{ item }} state=present"
+  with_items:
+    - supervisor
+    - python3-pip
+
+- name: install pip3 packages
+  pip: "name={{ item }} state=present executable=pip3"
+  with_items:
+      - docker
+
+- name: create /opt/autoswarm
+  file: path=/opt/autoswarm state=directory owner={{ansible_user}}
+
+- name: clone from github
+  git: repo=https://github.com/StevenVanAcker/autoswarm.git dest=/opt/autoswarm
+  become: no
+
+- name: setup supervisor config
+  template:
+    src: 'supervisor.conf.j2'
+    dest: '/etc/supervisor/conf.d/autoswarm.conf'
+  register: supervisor
+
+- name: reread supervisor config
+  supervisorctl: name='autoswarm' state=present
+  when: supervisor.changed
+
+- name: supervisor autoswarm-slave process started
+  supervisorctl: name='autoswarm' state=started
+  when: supervisor.changed
+

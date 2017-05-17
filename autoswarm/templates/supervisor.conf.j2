@@ -1,0 +1,7 @@
+[program:autoswarm]
+command=/opt/autoswarm/autoswarm-update-and-start.sh {{swarmrole | default("slave")}}
+user={{ansible_user}}
+autostart=true
+autorestart=true
+stopasgroup=true
+

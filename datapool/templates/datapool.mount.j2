@@ -1,0 +1,11 @@
+[Unit]
+Description=Mount the {{ src | default("/dev/datapool/data") }} to {{ dest | default("/datapool") }}
+
+[Mount]
+What={{ src | default("/dev/datapool/data") }}
+Where={{ dest | default("/datapool") }}
+Type=ext4
+Options=defaults
+
+[Install]
+WantedBy=multi-user.target

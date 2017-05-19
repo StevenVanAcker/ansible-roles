@@ -9,6 +9,15 @@
   shell: /tmp/install-docker.sh
   when: not docker.stat.exists
 
+- name: create daemon.json if needed
+  template: src=daemon.json.j2 dest=/etc/docker/daemon.json
+  when: dataroot is defined
+  register: daemonjson
+
+- name: restart docker if needed
+  service: name=docker state=restarted
+  when: daemonjson.changed
+
 - name: add default user to docker group
   user: name="{{ansible_user}}" groups=docker append=yes
 

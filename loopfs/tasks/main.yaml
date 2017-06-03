@@ -1,0 +1,25 @@
+- name: make sure mountpoint exists with correct permissions
+  file: path="{{path}}" state=directory mode="{{perm | default('u+rwx,g+rwx,o+rx')}}"
+
+- name: check if loopfile exists
+  stat: path="{{src}}"
+  register: loopfsfile
+
+- name: create loopfile
+  command: dd if=/dev/zero of="{{src}}" bs="{{bs | default(1)}}" count="{{count | default(1)}}"
+  when: not (loopfsfile.stat.exists is defined and loopfsfile.stat.exists)
+
+- name: format loopfile filesystem
+  filesystem: fstype="{{fstype | default('ext4')}}" dev="{{src}}"
+  when: not (loopfsfile.stat.exists is defined and loopfsfile.stat.exists)
+
+- name: mount loopfile
+  mount:
+    name: "{{path}}"
+    src: "{{src}}"
+    fstype: "{{fstype | default('ext4')}}"
+    opts: "{{opts | default('loop')}}"
+    state: mounted
+
+- name: make sure mounted filesystem also has correct permissions
+  file: path="{{path}}" state=directory mode="{{perm | default('u+rwx,g+rwx,o+rx')}}"

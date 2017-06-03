@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+import json, subprocess, sys, time
+
+def getUnusedDisks():
+    data = json.loads(subprocess.check_output(['lsblk', '-J']).decode("utf-8"))
+    return ["/dev/{}".format(x["name"]) for x in data["blockdevices"] if "children" not in x]
+
+def formatDisk(disk):
+    subprocess.check_call(["dd", "if=/dev/zero", "of={}".format(disk), "bs=1000000", "count=1"])
+    time.sleep(1)
+    subprocess.check_call(["parted", disk, "mklabel", "msdos"])
+    time.sleep(1)
+    subprocess.check_call(["parted", disk, "mkpart", "primary", "0%", "100%"])
+    time.sleep(1)
+    subprocess.check_call(["pvcreate", "-f", "{}1".format(disk)])
+    time.sleep(1)
+
+def createVolume(lvname, disks):
+    vgname = "datapool"
+    firstpartitions = ["{}1".format(d) for d in disks]
+    subprocess.check_call(["vgcreate", vgname] + firstpartitions)
+    time.sleep(1)
+    subprocess.check_call(["lvcreate", "-y", "-l", "100%FREE", "-n", lvname, vgname])
+    time.sleep(1)
+    subprocess.check_call(["mkfs.ext4", "-F", "/dev/{}/{}".format(vgname, lvname)])
+
+disks = getUnusedDisks()
+for d in disks:
+    formatDisk(d)
+
+if len(disks) > 0:
+    createVolume("data", disks)
+
+sys.exit(0)

@@ -1,0 +1,30 @@
+- name: make sure destination directory exists
+  file: path={{dest | default("/datapool") }} state=directory
+
+- name: copy datapool-create executable
+  copy: src=datapool-create dest=/usr/local/bin/datapool-create mode=0755
+  register: execfile
+
+- name: install datapool systemd mount target
+  template: src="{{item}}.j2" dest="/etc/systemd/system/{{item}}"
+  register: datapoolfiles
+  with_items:
+    - datapool.mount
+    - datapool-prepare.service
+
+- name: reload systemd units
+  command: systemctl daemon-reload
+
+- name: (re)start systemd services if needed
+  service: name={{item.item}} enabled=yes
+  when: item.changed
+  with_items: "{{ datapoolfiles.results }}"
+
+- name: run datapool-create on first run
+  command: /usr/local/bin/datapool-create
+  when: execfile.changed
+
+- name: mount datapool on first run
+  service: name=datapool.mount state=started
+  when: execfile.changed
+

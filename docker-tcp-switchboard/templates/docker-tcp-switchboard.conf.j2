@@ -1,3 +1,9 @@
 [global]
 splitconfigfiles = /etc/docker-tcp-switchboard.d/*.conf
-dockerparamsprefix = {{ dockerparamsprefix | default('') }}
+
+{% if dockeroptions is defined %}
+[dockeroptions]
+{% for key, value in dockeroptions.items() %}
+{{key}} = {{value}}
+{% endfor %}
+{% endif %}

@@ -1,4 +1,15 @@
-[image:{{ item.name }}]
-dockerparams = {{ item.dockerparams }}
+[profile:{{ item.profile }}]
+container = {{item.container }}
+innerport = {{ item.innerport }}
 outerport = {{ item.outerport }}
 limit = {{ item.limit | default(0) }}
+
+[dockeroptions:{{ item.profile }}]
+{% if item.dockeroptions is defined %}
+{% for key, value in item.dockeroptions.items() %}
+{{key}} = {{value}}
+{% endfor %}
+{% endif %}
+{% if item.dockeroptions is not defined or "hostname" not in item.dockeroptions %}
+hostname = {{item.container}}
+{% endif %}

@@ -15,8 +15,8 @@
 - name: symlink docker-tcp-switchboard
   file: src=/opt/docker-tcp-switchboard/docker-tcp-switchboard.py dest=/usr/local/bin/docker-tcp-switchboard.py state=link
 
-- name: create a configfile if there is none already
-  template: src=docker-tcp-switchboard.conf.j2 dest=/etc/docker-tcp-switchboard.conf force=no
+- name: create a configfile
+  template: src=docker-tcp-switchboard.conf.j2 dest=/etc/docker-tcp-switchboard.conf
 
 - name: create split configuration dir if needed
   file: path=/etc/docker-tcp-switchboard.d state=directory
@@ -24,7 +24,7 @@
 - name: create split configuration files
   template:
     src: 'splitconfig.j2'
-    dest: '/etc/docker-tcp-switchboard.d/{{item.name}}.conf'
+    dest: '/etc/docker-tcp-switchboard.d/{{item.profile}}.conf'
   with_items: '{{ images }}'
 
 - name: setup supervisor config

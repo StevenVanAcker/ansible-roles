@@ -34,3 +34,9 @@
   shell: "docker network create --subnet={{ item.item.subnet }} -o com.docker.network.bridge.name={{item.item.name}} {{item.item.name}}"
   when: item.rc == 1
   with_items: "{{ dockerbridgesres.results }}"
+
+- name: disable iptables mangling
+  lineinfile: dest='/lib/systemd/system/docker.service' state=present regexp='^ExecStart=/usr/bin/dockerd -H fd://' line='ExecStart=/usr/bin/dockerd -H fd:// --iptables=false'
+  notify:
+    - restart docker
+

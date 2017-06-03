@@ -1,3 +1,4 @@
 {
-    "data-root": "{{ dataroot }}"
+    "data-root": "{{ dataroot | default('/var/lib/docker/') }}",
+    "iptables": false
 }

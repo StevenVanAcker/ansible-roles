@@ -12,4 +12,5 @@ limit = {{ item.limit | default(0) }}
 {% endif %}
 {% if item.dockeroptions is not defined or "hostname" not in item.dockeroptions %}
 hostname = {{item.container}}
+extra_hosts = {"{{item.container}}.labs.overthewire.org": "0.0.0.0"}
 {% endif %}

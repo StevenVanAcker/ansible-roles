@@ -14,3 +14,4 @@ limit = {{ item.limit | default(0) }}
 hostname = {{item.container}}
 extra_hosts = {"{{item.container}}.labs.overthewire.org": "0.0.0.0"}
 {% endif %}
+environment = {"OUTERPORT": "{{item.outerport}}", "INNERPORT": "{{item.innerport}}"}

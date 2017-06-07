@@ -4,6 +4,10 @@ innerport = {{ item.innerport }}
 outerport = {{ item.outerport }}
 limit = {{ item.limit | default(0) }}
 
+{% if item.checkupport is defined %}
+checkupport = {{ item.checkupport }}
+{% endif %}
+
 [dockeroptions:{{ item.profile }}]
 {% if item.dockeroptions is defined %}
 {% for key, value in item.dockeroptions.items() %}
@@ -14,4 +18,4 @@ limit = {{ item.limit | default(0) }}
 hostname = {{item.container}}
 extra_hosts = {"{{item.container}}.labs.overthewire.org": "0.0.0.0"}
 {% endif %}
-environment = {"OUTERPORT": "{{item.outerport}}", "INNERPORT": "{{item.innerport}}"}
+environment = {"OUTERPORT": "{{item.outerport}}", "INNERPORT": "{{item.innerport}}", "CHECKUPPORT": "{{item.checkupport | default('')}}"}

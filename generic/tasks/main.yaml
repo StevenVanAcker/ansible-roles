@@ -29,6 +29,12 @@
         - git
         - vim
         - xauth
+        - python3-pip
+
+  - name: install pip3 packages
+    pip: "name={{ item }} state=present executable=pip3"
+    with_items:
+        - slackclient
 
   - name: install vimrc
     copy: src=vimrc dest=/etc/vim/vimrc
@@ -37,3 +43,4 @@
     lineinfile: dest=/etc/bash.bashrc state=present line="export LC_ALL=C"
 
     
+

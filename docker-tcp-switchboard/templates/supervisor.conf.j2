@@ -1,5 +1,5 @@
 [program:docker-tcp-switchboard]
-command=/usr/local/bin/docker-tcp-switchboard.py
+command=/usr/local/bin/docker-tcp-switchboard.py /etc/docker-tcp-switchboard.conf {{ ansible_default_ipv4.address }}
 user={{ansible_user}}
 autostart=true
 autorestart=true

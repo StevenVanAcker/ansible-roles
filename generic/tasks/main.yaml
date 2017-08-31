@@ -35,6 +35,7 @@
     pip: "name={{ item }} state=present executable=pip3"
     with_items:
         - slackclient
+        - netifaces
 
   - name: install vimrc
     copy: src=vimrc dest=/etc/vim/vimrc

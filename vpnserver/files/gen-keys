@@ -1,0 +1,27 @@
+#!/bin/bash -e
+
+currdir=$(pwd)
+
+# copy easy-rsa stuff
+cp -R /usr/share/easy-rsa/ .
+cd easy-rsa
+
+# set up config
+sed -i 's:changeme:*:' vars
+
+. ./vars
+./clean-all
+./build-dh
+./build-ca
+./build-key-server server
+./build-key client
+
+cd keys
+
+# copy the keys
+cp {ca,client,server}.{crt,key} dh*.pem $currdir
+
+# cleanup
+cd $currdir
+rm -rf easy-rsa
+echo "Done."

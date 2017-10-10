@@ -24,10 +24,16 @@
       - python-pip
 
 - name: install pip packages
-  pip: "name=docker state=present executable={{item}}"
+  pip: "name={{item}} state=present executable=pip"
   with_items:
-      - pip
-      - pip3
+      - docker
+      - docker-compose
+
+- name: install pip3 packages
+  pip: "name={{item}} state=present executable=pip3"
+  with_items:
+      - docker
+      - docker-compose
 
 - name: check bridges
   shell: "docker network inspect {{ item.name }}"

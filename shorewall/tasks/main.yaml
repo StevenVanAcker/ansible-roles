@@ -4,7 +4,7 @@
       - shorewall
   
   - name: make sure shorewall is enabled
-    service: name=shorewall enabled=yes
+    service: name=shorewall enabled=yes use=service
 
   - name: configure default shorewall rules
     lineinfile: "dest={{ item.filename }} line=\"{{ item.line }}\" state=present create=yes"

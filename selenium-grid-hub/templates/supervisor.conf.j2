@@ -1,0 +1,7 @@
+[program:selenium-grid-hub]
+command=/usr/bin/java -jar /opt/selenium-server-standalone.jar -role hub -host {{selenium_grid_hub_host}} -port {{selenium_grid_hub_port}}
+user={{ansible_user}}
+autostart=true
+autorestart=true
+stopasgroup=true
+

@@ -1,0 +1,24 @@
+- name: install some apt packages
+  apt: "name={{ item }} state=present"
+  with_items:
+    - default-jre
+    - supervisor
+
+- name: download selenium-server-standalone.jar
+  get_url:
+    url: http://selenium-release.storage.googleapis.com/3.6/selenium-server-standalone-3.6.0.jar
+    dest: /opt/selenium-server-standalone.jar
+
+- name: setup supervisor config
+  template:
+    src: 'supervisor.conf.j2'
+    dest: '/etc/supervisor/conf.d/selenium-grid-hub.conf'
+  register: supervisor
+
+- name: reread supervisor config
+  supervisorctl: name='selenium-grid-hub' state=present
+  when: supervisor.changed
+
+- name: supervisor valkyrie-slave process started
+  supervisorctl: name='selenium-grid-hub' state=started
+  when: supervisor.changed

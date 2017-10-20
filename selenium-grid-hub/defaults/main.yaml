@@ -1,0 +1,2 @@
+selenium_grid_hub_host: 127.0.0.1
+selenium_grid_hub_port: 4444

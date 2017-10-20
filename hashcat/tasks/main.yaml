@@ -1,0 +1,35 @@
+- name: ensure packages are installed
+  apt: "name={{ item }} state=present"
+  with_items:
+  - build-essential
+  - linux-image-extra-virtual
+  - p7zip-full
+
+- name: create blacklist-nouveau.conf
+  copy: src=blacklist-nouveau.conf dest=/etc/modprobe.d/blacklist-nouveau.conf
+
+- name: set nouveau-kms.conf options
+  lineinfile: dest=/etc/modprobe.d/nouveau-kms.conf state=present create=yes regexp='^options nouveau modeset=' line='options nouveau modeset=0'
+
+- name: update initramfs
+  shell: update-initramfs -u
+
+- name: reboot machine
+  command: /sbin/reboot
+
+- name: wait until rebooted...
+  local_action: wait_for host={{ ansible_ssh_host }} port={{ ansible_ssh_port }} state=started search_regex=OpenSSH timeout=300 delay=20
+  sudo: no
+
+- name: is it running?
+  command: uptime
+  changed_when: false
+
+- name: install kernel source
+  shell: "apt-get install -y linux-source linux-headers-`uname -r`"
+
+# http://us.download.nvidia.com/XFree86/Linux-x86_64/378.13/NVIDIA-Linux-x86_64-378.13.run
+#
+# sudo nvidia-smi -pm 1; sudo nvidia-smi -acp 0; sudo nvidia-smi --auto-boost-permission=0; sudo nvidia-smi -ac 2505,875
+# 
+# wget https://hashcat.net/files/hashcat-3.5.0.7z; 7za x hashcat-3.5.0.7z

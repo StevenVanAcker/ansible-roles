@@ -1,0 +1,39 @@
+---
+- name: install packages
+  apt: "name={{ item }} state=present"
+  with_items:
+      - unzip
+
+- name: make workdir
+  file: path=/opt/ut state=directory
+
+- name: Download urban terror
+  get_url:
+    url: http://www.urbanterror.info/external-link/?r=HctRCoAgDIDhq3SCDaqnzmHPoZgoiJO5Mej0WY8_fH8W6eNA1A7Bc_BCAxKjsuA5s7mbmXjf1itprfCUvuS5zMPMQD8iP4HSEmEka5V8HPgC
+    dest: /opt/ut/ut.zip
+    mode: 0440
+  
+- name: check if ET is already installed
+  stat: path=/opt/ut/UrbanTerror43
+  register: utunpacked
+
+- name: unpack UT
+  shell: cd /opt/ut && unzip /opt/ut/ut.zip
+  when: not utunpacked.stat.exists
+
+- name: generate some files
+  template: src={{item}} dest=/opt/ut/UrbanTerror43/q3ut4/{{item}} mode=755
+  with_items:
+    - server.cfg                      
+
+- name: copy some files
+  copy: src={{item}} dest=/opt/ut/UrbanTerror43/q3ut4/{{item}} mode=755
+  with_items:
+    - mapcycle.txt
+    - add_bot.cfg                     
+
+- name: copy some files
+  copy: src={{item}} dest=/opt/ut/{{item}} mode=755
+  with_items:
+    - urbanterror-server.sh
+    - urbanterror-server-with-bots.sh

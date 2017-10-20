@@ -1,0 +1,59 @@
+---
+- name: enable i386 dpkg repos
+  shell: dpkg --add-architecture i386
+
+- name: install packages
+  apt: "name={{ item }} state=present update_cache=yes"
+  with_items:
+        - apache2
+        - libc6:i386
+        - libdrm2:i386
+        - libexpat1:i386
+        - libgcc1:i386
+        - libgl1-mesa-glx:i386
+        - libglapi-mesa:i386
+        - libglu1-mesa:i386
+        - libstdc++6:i386
+        - libx11-6:i386
+        - libx11-xcb1:i386
+        - libxau6:i386
+        - libxcb1:i386
+        - libxcb-dri2-0:i386
+        - libxcb-dri3-0:i386
+        - libxcb-glx0:i386
+        - libxcb-present0:i386
+        - libxcb-sync1:i386
+        - libxdamage1:i386
+        - libxdmcp6:i386
+        - libxext6:i386
+        - libxfixes3:i386
+        - libxshmfence1:i386
+        - libxxf86vm1:i386
+        - libasound2:i386
+        - libasound2-plugins:i386
+
+- name: check if ET is already installed
+  stat: path=/opt/et/etlded_bot.sh
+  register: etlded
+
+- name: fetch ET
+  shell: rm -rf /tmp/etlegacy.sh /opt/et && wget -O /tmp/etlegacy.sh https://www.etlegacy.com/download/file/84 && chmod +x /tmp/etlegacy.sh && mkdir -p /opt/et && cd /opt/et && mkdir -p /opt/fakebin && ln -s $(which ls) /opt/fakebin/more && (echo y; echo n; echo y; echo y; yes) | PATH=/opt/fakebin:$PATH /tmp/etlegacy.sh --prefix=/opt/et && chown -R root.root /opt/et && find . -type f -exec chmod 755 {} \; && rm -rf /opt/fakebin
+  when: not etlded.stat.exists
+
+- name: append loading extra config
+  lineinfile: dest=/opt/et/etmain/etl_server.cfg line="exec myconfig.cfg"
+
+- name: add extra config
+  template: src=myconfig.cfg dest=/opt/et/etmain/myconfig.cfg
+
+- name: set moveskill to 0 for omnibots
+  lineinfile: dest=/opt/et/legacy/omni-bot/et/user/omni-bot.cfg regexp='^moveskill                      =' line='moveskill                      = 0'
+
+- name: allow apache to read pk3 files
+  copy: src=000-default.conf dest=/etc/apache2/sites-available/000-default.conf
+  register: apachepk3
+
+- name: restart apache if needed
+  service: name=apache2 state=restarted
+  when: apachepk3.changed
+

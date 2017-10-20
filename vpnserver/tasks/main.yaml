@@ -35,5 +35,9 @@
   tags:
       - firewall
 
+- name: restart openvpn if needed
+  shell: systemctl daemon-reload && systemctl restart openvpn
+  when: copyvpnfiles.changed
+
 #- name: set ip forwarding
 #  sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes

@@ -7,6 +7,9 @@
       - python3-boto3
       - python-boto3
 
+- name: remove requests from pip3 because it breaks boto3
+  pip: name=requests executable=pip3 state=absent
+
 - name: create aws config dir
   file: path="~{{ansible_user}}/.aws" state=directory mode=0755 owner="{{ansible_user}}" group="{{ansible_user}}"
 
@@ -19,8 +22,12 @@
 - name: copy aws config
   copy: src=files/awsconfig dest="/root/.aws/config" owner="root" group="root" mode=644
 
-- name: copy ecrtool script
-  copy: src=files/ecrtool dest="/usr/bin/ecrtool" owner="root" group="root" mode=755
+- name: copy scripts
+  copy: src={{item}} dest="/usr/bin/{{item}}" owner="root" group="root" mode=755
+  with_items:
+    - ecrtool
+    - ecstool
+    - aws_my_network.py
 
 - name: check if host was provisioned with credentials by amazon EC2
   shell: aws sts get-caller-identity

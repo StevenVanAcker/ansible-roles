@@ -9,12 +9,18 @@ def debug(msg):
 def listNetworks():
     client = boto3.client('ec2')
     response = client.describe_vpcs()
-    if len(response["Vpcs"]) > 0:
-        print("ID          \tIP-Range\t(Name)")
+    #if len(response["Vpcs"]) > 0:
+    #    print("ID          \tIP-Range\t(Name)")
         
     for vpc in response["Vpcs"]:
         names = [x["Value"] for x in vpc["Tags"] if x["Key"] == "Name"]
         print("{}\t{}{}".format(vpc["VpcId"], vpc["CidrBlock"], "\t({})".format(names[0]) if len(names) > 0 else ""))
+
+        response = client.describe_subnets(Filters=[{'Name': 'vpc-id', 'Values': [vpc["VpcId"]]}])
+        if len(response["Subnets"]) > 0:
+            subnetids = [(x["SubnetId"], x["CidrBlock"]) for x in response["Subnets"]]
+            for (snid,ipr) in subnetids:
+                print("    {}   ({})".format(snid, ipr))
 
 def deleteNetwork(iprange):
     client = boto3.client('ec2')

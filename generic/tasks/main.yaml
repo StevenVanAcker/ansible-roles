@@ -36,6 +36,7 @@
     with_items:
         - slackclient
         - netifaces
+        - netaddr
 
   - name: install vimrc
     copy: src=vimrc dest=/etc/vim/vimrc

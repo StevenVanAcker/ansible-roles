@@ -1,5 +1,5 @@
 - name: make sure destination directory exists
-  file: path={{dest | default("/datapool") }} state=directory
+  file: path={{dest}} state=directory
 
 - name: copy datapool-create executable
   copy: src=datapool-create dest=/usr/local/bin/datapool-create mode=0755

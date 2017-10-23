@@ -1,5 +1,5 @@
 [Unit]
-Description=Create {{ src | default("/dev/datapool/data") }} if needed, by combining all unused disks into a logical volume
+Description=Create {{ src }} if needed, by combining all unused disks into a logical volume
 
 [Service]
 ExecStart=/usr/local/bin/datapool-create

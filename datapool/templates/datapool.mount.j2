@@ -1,9 +1,9 @@
 [Unit]
-Description=Mount the {{ src | default("/dev/datapool/data") }} to {{ dest | default("/datapool") }}
+Description=Mount the {{ src }} to {{ dest }}
 
 [Mount]
-What={{ src | default("/dev/datapool/data") }}
-Where={{ dest | default("/datapool") }}
+What={{ src }}
+Where={{ dest }}
 Type=ext4
 Options=defaults
 

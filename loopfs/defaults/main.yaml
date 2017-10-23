@@ -1,0 +1,5 @@
+perm: u+rwx,g+rwx,o+rx
+bs: 1
+count: 1
+fstype: ext4
+opts: loop

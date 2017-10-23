@@ -1,5 +1,5 @@
 [program:autoswarm]
-command=/opt/autoswarm/autoswarm-update-and-start.sh {{swarmrole}}
+command=/opt/autoswarm/autoswarm-update-and-start.sh {{swarmrole}} {{advertise_addr}}
 user={{ansible_user}}
 autostart=true
 autorestart=true

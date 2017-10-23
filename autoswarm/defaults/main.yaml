@@ -1,1 +1,2 @@
 swarmrole: slave
+advertise_addr: ""

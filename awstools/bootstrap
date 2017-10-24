@@ -1,0 +1,2 @@
+aws_my_network.py create --name ssh-only --tcp 22 10.20.30.0/24
+aws_my_iam.py create swarmnode AmazonSQSFullAccess AmazonEC2ContainerRegistryReadOnly AmazonS3FullAccess AmazonDynamoDBFullAccess

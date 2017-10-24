@@ -30,6 +30,7 @@
         - vim
         - xauth
         - python3-pip
+        - ntp
 
   - name: install pip3 packages
     pip: "name={{ item }} state=present executable=pip3"

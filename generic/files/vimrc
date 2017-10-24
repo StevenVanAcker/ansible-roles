@@ -17,6 +17,8 @@ set background=dark
 
 " In text files, always limit the width of text to 78 characters
 autocmd BufRead *.txt set tw=78	
+" For python, always expand tabs
+autocmd BufRead *.py set tabstop=4 shiftwidth=4 expandtab
 
 " For Win32 GUI: remove 't' flag from 'guioptions': no tearoff menu entries
 " let &guioptions = substitute(&guioptions, "t", "", "g")

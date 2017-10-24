@@ -28,6 +28,7 @@
     - ecrtool
     - ecstool
     - aws_my_network.py
+    - aws_my_iam.py
 
 - name: check if host was provisioned with credentials by amazon EC2
   shell: aws sts get-caller-identity

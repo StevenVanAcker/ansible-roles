@@ -1,4 +1,8 @@
 {
     "data-root": "{{ dataroot }}",
+{% if iptables %}
+    "iptables": true
+{% else %}
     "iptables": false
+{% endif %}
 }

@@ -1,2 +1,3 @@
 bridges: []
 dataroot: /var/lib/docker/
+iptables: false

@@ -25,6 +25,6 @@
   when: item.rc != 0 and item.item.repo is defined
 
 - name: build Docker image from file
-  shell: "docker build -t {{item.item.name}} {{item.item.path}}"
+  shell: "docker build -t {{item.item.name}} -f {{item.item.path}}/{{item.item.file | default('Dockerfile')}} {{item.item.path}}"
   with_items: "{{imagesexist.results}}"
   when: item.rc != 0 and item.item.path is defined

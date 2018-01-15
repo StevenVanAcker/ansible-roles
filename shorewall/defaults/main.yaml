@@ -1,1 +1,8 @@
 rules: []
+default_rules:
+  - { filename: "/etc/shorewall/interfaces", line: "ext {{ ansible_default_ipv4.interface }}" }
+  - { filename: "/etc/shorewall/zones",   line: "fw firewall" }
+  - { filename: "/etc/shorewall/zones",   line: "ext ipv4" }
+  - { filename: "/etc/shorewall/policy",  line: "all all DROP info" }
+  - { filename: "/etc/shorewall/rules",   line: "ACCEPT:info ext fw tcp 22" }
+  - { filename: "/etc/shorewall/rules",   line: "ACCEPT:info fw ext all" }

@@ -69,7 +69,7 @@ class ECRTool(object):
         if self.loggedin:
             return True
 
-        logincmd = subprocess.check_output(["aws", "ecr", "get-login"]).decode("utf-8").strip()
+        logincmd = subprocess.check_output(["aws", "ecr", "get-login"]).decode("utf-8").strip().replace("-e none", "")
         output = subprocess.check_output(logincmd, stderr=subprocess.STDOUT, shell=True).decode("utf-8").strip() #brrr
         if "Login Succeeded" in output:
             self.loggedin = True

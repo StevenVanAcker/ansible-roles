@@ -1,1 +1,3 @@
-* * * * * root bash -c "$(aws ecr get-login| sed 's:-e none::')"
+#!/bin/bash
+
+$(aws ecr get-login | sed 's:-e none::') 2>&1 >> /root/autoswarm-dockerlogin.log

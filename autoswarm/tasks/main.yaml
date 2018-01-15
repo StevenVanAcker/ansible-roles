@@ -30,6 +30,10 @@
   supervisorctl: name='autoswarm' state=started
   when: supervisor.changed
 
-- name: try to login to AWS ECR with docker
-  copy: src=autoswarm-dockerlogin dest=/etc/cron.d/autoswarm-dockerlogin
+- name: try to login to AWS ECR with docker (cronjob)
+  copy: src=autoswarm-dockerlogin.cronjob dest=/etc/cron.d/autoswarm-dockerlogin
+  when: dockerlogin
+
+- name: try to login to AWS ECR with docker (script)
+  copy: src=autoswarm-dockerlogin dest=/usr/local/bin/autoswarm-dockerlogin
   when: dockerlogin

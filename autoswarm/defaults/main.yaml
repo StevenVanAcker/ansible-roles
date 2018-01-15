@@ -1,2 +1,3 @@
 swarmrole: slave
 advertise_addr: ""
+dockerlogin: false

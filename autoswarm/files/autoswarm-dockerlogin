@@ -1,0 +1,1 @@
+* * * * * root bash -c "$(aws ecr get-login| sed 's:-e none::')"

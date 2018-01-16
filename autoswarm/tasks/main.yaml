@@ -31,7 +31,9 @@
   when: supervisor.changed
 
 - name: try to login to AWS ECR with docker (cronjob)
-  copy: src=autoswarm-dockerlogin.cronjob dest=/etc/cron.d/autoswarm-dockerlogin
+  template:
+    src: 'autoswarm-dockerlogin.cronjob.j2'
+    dest: '/etc/cron.d/autoswarm-dockerlogin'
   when: dockerlogin
 
 - name: try to login to AWS ECR with docker (script)

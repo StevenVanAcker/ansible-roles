@@ -1,1 +1,2 @@
 * * * * * root /usr/local/bin/autoswarm-dockerlogin
+* * * * * {{ansible_user}} /usr/local/bin/autoswarm-dockerlogin

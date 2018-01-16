@@ -35,5 +35,5 @@
   when: dockerlogin
 
 - name: try to login to AWS ECR with docker (script)
-  copy: src=autoswarm-dockerlogin dest=/usr/local/bin/autoswarm-dockerlogin
+  copy: src=autoswarm-dockerlogin dest=/usr/local/bin/autoswarm-dockerlogin mode=0755
   when: dockerlogin

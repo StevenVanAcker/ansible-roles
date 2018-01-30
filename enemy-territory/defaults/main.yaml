@@ -1,1 +1,6 @@
-servername: ETServer
+servername: MyServer
+serverip: 127.0.0.1
+rconpassword: xxx
+connectpassword: xxx
+bot_difficulty: 0
+bot_count: 0

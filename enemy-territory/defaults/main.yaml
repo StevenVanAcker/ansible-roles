@@ -1,6 +1,9 @@
 servername: MyServer
 serverip: 127.0.0.1
-rconpassword: xxx
-connectpassword: xxx
+rconpassword: ""
+connectpassword: ""
 bot_difficulty: 0
 bot_count: 0
+bot_war: false
+bot_team: 1
+botsperhuman: 3

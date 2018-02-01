@@ -13,3 +13,9 @@ set server_motd0 " ^N{{servername}} ET^7 MOTD "                 // message in ri
 bot difficulty {{bot_difficulty | default(0)}}
 bot maxbots {{bot_count | default(0)}}
 
+{% if bot_war %}
+bot botteam {{ bot_team | default(1)}}
+bot botsperhuman {{ botsperhuman | default(3) }}
+{% else %}
+bot botwar -1
+{% endif %}

@@ -55,8 +55,14 @@
 - name: copy start script
   copy: src=start_et.sh dest=/home/{{ansible_user}}/start_et.sh mode=0755
 
+- name: copy readme
+  copy: src=et.README.maps dest=/home/{{ansible_user}}/et.README.maps
+
 - name: create config file
   template: src=et.yaml.j2 dest=/home/{{ansible_user}}/et.yaml owner={{ansible_user}}
+
+- name: create symlink to maps folder
+  file: src=/opt/et/legacy/ dest=/home/{{ansible_user}}/et.maps state=link
 
 - name: set moveskill to 0 for omnibots
   lineinfile: dest=/opt/et/legacy/omni-bot/et/user/omni-bot.cfg regexp='^moveskill                      =' line='moveskill                      = 0'

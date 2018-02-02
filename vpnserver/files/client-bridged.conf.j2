@@ -1,11 +1,11 @@
 client
-dev tun
+dev tap
 proto tcp
 remote {{serverip}} {{serverport}}
 resolv-retry infinite
 nobind
 persist-key
-persist-tun
+
 
 remote-cert-tls server
 cipher AES-256-CBC

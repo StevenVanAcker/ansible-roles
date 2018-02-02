@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Usage: $0 <client.conf.j2> <server.conf>
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+f=$(mktemp /tmp/XXXXXXXX.yaml)
+
+serverconf=$2
+clientconf=$1
+
+if [ "$serverconf" = "" -o "$clientconf" = "" ];
+then
+    echo "Usage: $0 <client.conf.j2> <server.conf>"
+    exit 1
+fi
+
+
+serverip=$(cat $DIR/serverip)
+
+serverport=$(cat $serverconf | grep port | awk '{print $2}')
+
+ca=$(openssl x509 -in ca.crt | sed ':a;N;$!ba;s/\n/\\n/g')
+clientcert=$(openssl x509 -in client.crt | sed ':a;N;$!ba;s/\n/\\n/g')
+clientkey=$(cat client.key | sed ':a;N;$!ba;s/\n/\\n/g')
+
+cat > $f <<EOF
+serverip: "$serverip"
+serverport: "$serverport"
+ca: "$ca"
+clientcert: "$clientcert"
+clientkey: "$clientkey"
+EOF
+
+jinja2 $clientconf $f
+
+rm -f $f

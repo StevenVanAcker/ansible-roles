@@ -38,6 +38,7 @@
     - example-server-bridged.conf
     - client-bridged.conf.j2
     - client-routed.conf.j2
+    - up.sh
 
 - name: store our IP address
   copy: dest=/etc/openvpn/tools/serverip content="{{ansible_host}}"

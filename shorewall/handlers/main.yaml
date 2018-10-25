@@ -1,2 +1,3 @@
 - name: restart shorewall
   shell: "shorewall check && shorewall restart"
+  when: execute_shorewall_handler is defined and execute_shorewall_handler

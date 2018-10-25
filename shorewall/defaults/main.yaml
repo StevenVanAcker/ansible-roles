@@ -1,3 +1,4 @@
+execute_shorewall_handler: true
 rules: []
 default_rules:
   - { filename: "/etc/shorewall/interfaces", line: "ext {{ ansible_default_ipv4.interface }}" }

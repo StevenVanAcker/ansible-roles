@@ -1,0 +1,11 @@
+- name: create /root/.ssh
+  file: path=/root/.ssh state=directory
+
+- name: add entries to /root/.ssh/authorized_keys
+  lineinfile: 
+    path: /root/.ssh/authorized_keys
+    line: "{{item}}"
+    state: present
+    create: true
+  with_lines: "cat {{ src }}"
+

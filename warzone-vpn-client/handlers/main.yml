@@ -1,0 +1,6 @@
+---
+- name: restart openvpn
+  systemd: name=openvpn state=restarted daemon_reload=true
+  when: execute_warzonevpnclient_handler is defined and execute_warzonevpnclient_handler
+
+

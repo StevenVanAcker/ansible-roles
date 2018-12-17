@@ -1,0 +1,15 @@
+- name: install some apt packages
+  apt: "name={{ item }} state=present"
+  with_items:
+    - openvpn
+
+- name: copy openvpn config
+  copy: src={{configfile}} dest=/etc/openvpn/vpnclient.conf mode=0444
+  notify:
+  - restart openvpn
+
+- name: fix openvpn defaults for init script
+  lineinfile: dest=/etc/default/openvpn regexp="^AUTOSTART=" line="AUTOSTART=\"all\"" state=present create=yes
+  notify:
+  - restart openvpn
+

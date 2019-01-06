@@ -1,0 +1,15 @@
+---
+- name: restart openvpn
+  systemd: name=openvpn state=restarted daemon_reload=true
+  when: execute_warzonevpnclient_handler is defined and execute_warzonevpnclient_handler
+
+- name: reread supervisor config
+  supervisorctl: name='docker-tcp-switchboard' state=present
+  when: execute_dockertcpswitchboard_handler is defined and execute_dockertcpswitchboard_handler
+  listen: reread docker-tcp-switchboard supervisor config and restart
+
+- name: supervisor docker-tcp-switchboard process started
+  supervisorctl: name='docker-tcp-switchboard' state=started
+  when: execute_dockertcpswitchboard_handler is defined and execute_dockertcpswitchboard_handler
+  listen: reread docker-tcp-switchboard supervisor config and restart
+

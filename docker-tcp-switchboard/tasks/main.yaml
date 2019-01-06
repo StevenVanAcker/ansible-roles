@@ -32,14 +32,8 @@
     src: 'supervisor.conf.j2'
     dest: '/etc/supervisor/conf.d/docker-tcp-switchboard.conf'
   register: supervisor
-
-- name: reread supervisor config
-  supervisorctl: name='docker-tcp-switchboard' state=present
-  when: supervisor.changed
-
-- name: supervisor docker-tcp-switchboard process started
-  supervisorctl: name='docker-tcp-switchboard' state=started
-  when: supervisor.changed
+  notify:
+    - reread docker-tcp-switchboard supervisor config and restart
 
 #- name: list files in split config dir
 #  shell: for i in $(ls -1 /etc/docker-tcp-switchboard.d/); do basename $i .conf; done

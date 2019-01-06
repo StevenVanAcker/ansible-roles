@@ -1,1 +1,2 @@
 listen_address: "{{ ansible_default_ipv4.address }}"
+execute_dockertcpswitchboard_handler: true
